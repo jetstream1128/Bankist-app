@@ -106,16 +106,26 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const displayMovements = function (movements, sort = false) {
+const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
 
-  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+  const movs = sort
+    ? acc.movements.slice().sort((a, b) => a - b)
+    : acc.movements;
 
   movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
+
+    const date = new Date(acc.movementsDates[i]);
+    const day = `${date.getDate()}`.padStart(2, 0);
+    const month = `${date.getMonth() + 1}`.padStart(2, 0);
+    const year = date.getFullYear();
+    const displayDate = `${day}/${month}/${year}`;
+
     const html = `
     <div class="movements__row">
     <div class="movements__type movements__type--${type}">${i + 1} ${type}</div>
+    <div class="movements__date">${displayDate}</div>
     <div class="movements__value">${mov.toFixed(2)}€</div>
   </div>
   `;
@@ -159,7 +169,7 @@ createUsernames(accounts);
 
 const updateUI = function (acc) {
   //display movements
-  displayMovements(acc.movements);
+  displayMovements(acc);
   //display balance
   calcDisplayBalance(acc);
   //display summary
@@ -168,6 +178,12 @@ const updateUI = function (acc) {
 
 //event handler
 let currentAccount;
+
+//Fake always loggen in
+currentAccount = account1;
+updateUI(currentAccount);
+containerApp.style.opacity = 100;
+
 btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
 
@@ -180,7 +196,18 @@ btnLogin.addEventListener('click', function (e) {
     labelWelcome.textContent = `Welcome back, ${
       currentAccount.owner.split(' ')[0]
     }!`;
+
+    const now = new Date();
+    const day = `${now.getDate()}`.padStart(2, 0);
+    const month = `${now.getMonth() + 1}`.padStart(2, 0);
+    const year = now.getFullYear();
+    const hour = `${now.getHours()}`.padStart(2, 0);
+    const minutes = `${now.getMinutes()}`.padStart(2, 0);
+    labelDate.textContent = `${day}/${month}/${year}, ${hour}:${minutes}`;
+    // day/month/year
+
     containerApp.style.opacity = 100;
+
     //clear the input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
@@ -197,7 +224,7 @@ btnLoan.addEventListener('click', function (e) {
   if (amount > 0 && currentAccount.movements.some(any => any >= amount * 0.1)) {
     //add movement
     currentAccount.movements.push(amount);
-
+    currentAccount.movementsDates.push(new Date().toISOString());
     // Update UI
     updateUI(currentAccount);
     inputLoanAmount.value = '';
@@ -220,8 +247,10 @@ btnTransfer.addEventListener('click', function (e) {
   ) {
     //doing the transfer
     currentAccount.movements.push(-amount);
-    receiverAcc.movements.push(amount);
+    currentAccount.movementsDates.push(new Date().toISOString());
 
+    receiverAcc.movements.push(amount);
+    receiverAcc.movementsDates.push(new Date().toISOString());
     //update UI
     updateUI(currentAccount);
   }
@@ -250,7 +279,7 @@ btnClose.addEventListener('click', function (e) {
 let sorted = false;
 btnSort.addEventListener('click', function (e) {
   e.preventDefault;
-  displayMovements(currentAccount.movements, !sorted);
+  displayMovements(currentAccount, !sorted);
   sorted = !sorted;
 });
 
@@ -1063,5 +1092,54 @@ console.log(10 / 3); // 3.33333333
 //#endregion
 
 //#region ------ Lecture 174 Creating dates -----
+
+//create a date
+/*
+const now = new Date();
+console.log(now);
+
+console.log(new Date('Sat Apr 22 2023 16:58:35'));
+console.log(new Date('December 24, 2015'));
+
+console.log('-----------------');
+console.log(new Date(account1.movementsDates[0]));
+
+console.log(new Date(2037, 10, 19, 15, 23, 5));
+console.log(new Date(2037, 10, 31));
+
+console.log(new Date(0));
+console.log(new Date(3 * 24 * 60 * 60 * 1000));
+
+//working with dates
+const future = new Date(2037, 10, 19, 15, 23, 10, 678);
+console.log(future.getFullYear());
+console.log(future.getMonth() + 1);
+console.log(future.getDate());
+console.log(future.getDay());
+console.log(future.getHours());
+console.log(future.getMinutes());
+console.log(future.getSeconds());
+console.log(future.getMilliseconds());
+console.log(future.toISOString());
+console.log(future.getTime());
+
+console.log(new Date(2_142_278_590_678));
+
+console.log(Date.now());
+
+future.setFullYear(2040);
+console.log(future);
+*/
+//#endregion
+
+//#region ------ Lecture 175 Operation with dates -----
+
+const future = new Date(2037, 10, 19, 15, 23, 10, 678);
+console.log(+future);
+
+const calcDaysPassed = (date1, date2) =>
+  Math.abs(date2 - date1) / (1000 * 60 * 60 * 24);
+const days1 = calcDaysPassed(new Date(2037, 4, 19), new Date(2037, 10, 19));
+console.log(days1);
 
 //#endregion
