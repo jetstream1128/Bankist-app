@@ -116,7 +116,7 @@ const displayMovements = function (movements, sort = false) {
     const html = `
     <div class="movements__row">
     <div class="movements__type movements__type--${type}">${i + 1} ${type}</div>
-    <div class="movements__value">${mov}€</div>
+    <div class="movements__value">${mov.toFixed(2)}€</div>
   </div>
   `;
     containerMovements.insertAdjacentHTML('afterbegin', html);
@@ -125,29 +125,27 @@ const displayMovements = function (movements, sort = false) {
 
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${acc.balance}€`;
+  labelBalance.textContent = `${acc.balance.toFixed(2)}€`;
 };
 
 const calcDisplaySummary = function (acc) {
   const incomes = acc.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes}€`;
+  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
 
   const outcomes = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc - mov, 0);
-  labelSumOut.textContent = `${outcomes}€`;
+  labelSumOut.textContent = `${outcomes.toFixed(2)}€`;
 
   const interest = acc.movements
     .filter(mov => mov > 0)
     .map(deposit => (deposit * acc.interestRate) / 100)
     .filter(int => int >= 1)
     .reduce((acc, int) => acc + int, 0);
-  labelSumInterest.textContent = `${interest}€`;
+  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 };
-//-------------------------------------------------------------------
-console.log('hello');
 const createUsernames = function (accs) {
   accs.forEach(function (acc) {
     acc.username = acc.owner
@@ -177,7 +175,7 @@ btnLogin.addEventListener('click', function (e) {
     acc => acc.username === inputLoginUsername.value.trim()
   );
 
-  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+  if (currentAccount?.pin === +inputLoginPin.value) {
     //display UI and welcome message
     labelWelcome.textContent = `Welcome back, ${
       currentAccount.owner.split(' ')[0]
@@ -193,7 +191,9 @@ btnLogin.addEventListener('click', function (e) {
 
 btnLoan.addEventListener('click', function (e) {
   e.preventDefault();
-  const amount = Number(inputLoanAmount.value);
+
+  const amount = Math.floor(inputLoanAmount.value);
+
   if (amount > 0 && currentAccount.movements.some(any => any >= amount * 0.1)) {
     //add movement
     currentAccount.movements.push(amount);
@@ -206,7 +206,7 @@ btnLoan.addEventListener('click', function (e) {
 
 btnTransfer.addEventListener('click', function (e) {
   e.preventDefault();
-  const amount = Number(inputTransferAmount.value);
+  const amount = +inputTransferAmount.value;
   const receiverAcc = accounts.find(
     acc => acc.username === inputTransferTo.value
   );
@@ -845,4 +845,223 @@ HINT 1: Use many different tools to solve these challenges, you can use the summ
 HINT 2: Being within a range 10% above and below the recommended portion means: current > (recommended * 0.90) && current < (recommended * 1.10). Basically, the current portion should be between 90% and 110% of the recommended portion.
 GOOD LUCK 😀
 */
+//#endregion
+
+//#region ----- Lecture 170-171 Operations with Numbers ----
+/*
+console.log(23 === 23.0);
+
+//base 10 - 0 to 9
+//Binary base 2 - 0 and 1
+console.log(0.1 + 0.2);
+console.log(0.1 + 0.2 === 0.3);
+
+//conversion
+console.log(Number('23'));
+console.log(+'23  ');
+
+//parsing
+console.log(Number.parseInt('30px', 10)); //30
+console.log(Number.parseInt('px30', 10)); //NaN
+
+console.log(Number.parseInt('2.5rem')); //2
+console.log(Number.parseFloat('2.5rem')); //2.5
+
+//console.log(parseFloat('2.5rem')); //2.5
+
+//Check is value is NaN
+console.log(Number.isNaN(70)); //false
+console.log(Number.isNaN('70')); //false
+console.log(Number.isNaN(+'70x')); //true
+console.log(Number.isNaN(23 / 0)); //false
+
+//Checking is value is a Number
+console.log(Number.isFinite(20)); //true
+console.log(Number.isFinite('20')); //false
+console.log(Number.isFinite(+'20x')); //false
+console.log(Number.isFinite('20x')); //false
+console.log(Number.isFinite(23 / 0)); //false
+
+console.log(Number.isInteger(23)); //true
+console.log(Number.isInteger(23.0)); //true
+console.log(Number.isInteger(23 / 0)); //false
+*/
+/*
+//Square root
+console.log(Math.sqrt(25));
+console.log(25 ** (1 / 2));
+
+//Cubic root
+console.log(8 ** (1 / 3));
+
+//Max value return
+console.log(Math.max(5, 18, 23, 1, 6)); //23
+console.log(Math.max(5, 18, '23', 1, 6)); //23
+console.log(Math.max(5, 18, '23px', 1, 6)); //NaN
+
+//Min value return
+console.log(Math.min(5, 18, 23, 1, 6)); //1
+console.log(Math.min(5, 18, '23', 1, 6)); //1
+console.log(Math.min(5, 18, '23px', 1, 6)); //NaN
+
+//circle radius
+console.log(Math.PI * Number.parseFloat('10px') ** 2); //PI*r**2
+
+//Generate randoms
+console.log(Math.trunc(Math.random() * 6) + 1);
+
+//function which give us number between Min....Max
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+//Rounding integers
+console.log(Math.trunc(23.3)); //23
+
+console.log(Math.round(23.1)); //23
+console.log(Math.round(23.9)); //24
+
+console.log(Math.ceil(23.1)); //24
+console.log(Math.ceil(23.9)); //24
+
+console.log(Math.floor(23.1)); //23
+console.log(Math.floor('23.9')); //23
+
+console.log(Math.trunc(-23.3)); //-23
+console.log(Math.floor(-23.1)); //-24
+console.log(Math.ceil(-23.9)); //23
+
+//rounding decimals
+console.log((2.7).toFixed(0)); //2 (string)
+console.log((2.7).toFixed(1)); //2.7 (String)
+console.log((2.7).toFixed(3)); //2.700(String)
+console.log((2.345).toFixed(2)); //2.35(String)
+console.log(+(2.345).toFixed(2)); //2.35(Number)
+*/
+/*
+function generateRandoms(length, min, max) {
+  return Array.from({ length }, () => randomInt(min, max));
+}
+
+function countOccurrences(arr) {
+  return arr.reduce((acc, el) => {
+    acc[el] = (acc[el] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function displayResults(arr, occurrences) {
+  const length = arr.length;
+  const maxOccurrence = Math.max(...Object.values(occurrences));
+  const mostCommonNumber = Object.keys(occurrences).find(
+    key => occurrences[key] === maxOccurrence
+  );
+
+  for (const [key, value] of Object.entries(occurrences)) {
+    console.log(
+      `Number ${key} appears ${value} times, which is ${Math.trunc(
+        (value / length) * 100
+      )}% of all elements`
+    );
+  }
+
+  console.log(
+    `The most common Number: ${mostCommonNumber} with ${maxOccurrence} occurrences`
+  );
+}
+
+const randoms = generateRandoms(100, 10, 20);
+const occurrences = countOccurrences(randoms);
+displayResults(randoms, occurrences);
+*/
+
+//#endregion
+
+//#region ----- Lecture 172 Remainder operator -----
+/*
+console.log(5 % 2); //1 = 2 * 2 + 1 (reminder)
+console.log(5 / 2); //2.5
+
+console.log(8 % 3); // 2 = 2 * 3 + 2 (reminder)
+console.log(8 / 3); //2.666666666665
+
+console.log(6 % 2); //0
+console.log(7 % 2); //1
+
+const isEven = n => n % 2 === 0;
+console.log(isEven(66)); //true
+console.log(isEven(24325)); //false
+
+const movementRows = [...document.querySelectorAll('.movements__row')].forEach(
+  function (row, i) {
+    if (i % 2 === 0) row.style.backgroundColor = 'orangered';
+  }
+);
+
+btnLogin.addEventListener('click', function () {
+  [...document.querySelectorAll('.movements__row')].forEach(function (row, i) {
+    if (i % 2 === 0) row.style.backgroundColor = '#99999945';
+    // if (i % 3 === 0) row.style.backgroundColor = '#555';
+  });
+});
+*/
+//#endregion
+
+//#region ------ Lecture 172 Numeric separators -----
+/*
+//287,460,000,000
+const diameter = 287_460_000_000;
+console.log(diameter);
+
+const price = 345_99;
+console.log(price);
+
+const transferFee1 = 15_00;
+const transferFee2 = 1_500;
+
+const PI = 3.14_15;
+console.log(PI);
+
+console.log(Number('230000'));
+console.log(Number('230_000'));
+*/
+//#endregion
+
+//#region ----- Lecture 173 BigInt ----
+/*
+console.log(2 ** 53 - 1);
+console.log(Number.MAX_SAFE_INTEGER);
+console.log(2 ** 53 + 0);
+console.log(2 ** 53 + 2);
+console.log(2 ** 53 + 11);
+
+const a = 234235255262623243242342342343242432432n;
+console.log(a);
+console.log(BigInt(234235255262623243242342342343242432432));
+
+//Operations
+console.log(10000n + 10000n);
+console.log(12131312312312312312n * 983209839278288793289n);
+
+const huge = 12131312312312312312n;
+const num = 23;
+//console.log(huge + num); //error
+console.log(huge + BigInt(num));
+
+//Expressions
+console.log(10n < 20); // true
+console.log(10n === 10); //false
+console.log(10n == 10); //true
+console.log(typeof 20n);
+
+console.log(huge + ' is realy big!');
+
+//Divisions
+console.log(11n / 3n); //3n (cut decimals)
+console.log(10 / 3); // 3.33333333
+*/
+//#endregion
+
+//#region ------ Lecture 174 Creating dates -----
+
 //#endregion
