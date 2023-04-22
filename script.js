@@ -146,7 +146,8 @@ const calcDisplaySummary = function (acc) {
     .reduce((acc, int) => acc + int, 0);
   labelSumInterest.textContent = `${interest}€`;
 };
-
+//-------------------------------------------------------------------
+console.log('hello');
 const createUsernames = function (accs) {
   accs.forEach(function (acc) {
     acc.username = acc.owner
