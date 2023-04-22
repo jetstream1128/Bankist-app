@@ -82,6 +82,32 @@ nav {
   outline: none;
   color: #777;
 }
+.container {
+  position: absolute;
+  top: 80px;
+  right: 70px;
+}
+nav {
+  position: relative;
+}
+.accounts__referance {
+  padding: 10px;
+  width: 200px;
+  background-color: #e4e4e46a;
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.accounts__referance p:first-child {
+  grid-column: 1 / -1;
+}
+
+.accounts__referance p {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 5px;
+}
 
 /* MAIN */
 .app {
