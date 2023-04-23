@@ -217,25 +217,24 @@ const updateUIOnLogOut = function () {
 
 //logout
 const startLogOutTimer = function () {
-  //set time to 5 minutes
-  let time = 5;
-
-  //call the timer every second
-  const timer = setInterval(function () {
+  const tick = function () {
     const minutes = String(Math.trunc(time / 60)).padStart(2, 0);
     const seconds = String((time % 60) - 1).padStart(2, 0);
     //in each callback, print time to UI
     labelTimer.textContent = `${minutes}:${seconds}`;
-
     //decrees 1 sec
     time--;
-
     //when time at 0 -> stop timer and logout user
     if (time === 0) {
       clearInterval(timer);
       updateUIOnLogOut();
     }
-  }, 1000);
+  };
+  //set time to 5 minutes
+  let time = 5;
+  //call the timer every second
+  tick();
+  const timer = setInterval(tick, 1000);
 };
 
 //event handler
