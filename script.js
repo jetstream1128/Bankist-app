@@ -219,26 +219,27 @@ const updateUIOnLogOut = function () {
 const startLogOutTimer = function () {
   const tick = function () {
     const minutes = String(Math.trunc(time / 60)).padStart(2, 0);
-    const seconds = String((time % 60) - 1).padStart(2, 0);
+    const seconds = String(time % 60).padStart(2, 0);
     //in each callback, print time to UI
     labelTimer.textContent = `${minutes}:${seconds}`;
-    //decrees 1 sec
-    time--;
     //when time at 0 -> stop timer and logout user
     if (time === 0) {
       clearInterval(timer);
       updateUIOnLogOut();
     }
+    //decrees 1 sec
+    time--;
   };
   //set time to 5 minutes
-  let time = 5;
+  let time = 20;
   //call the timer every second
   tick();
   const timer = setInterval(tick, 1000);
+  return timer;
 };
 
 //event handler
-let currentAccount;
+let currentAccount, timer;
 
 btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
@@ -296,7 +297,8 @@ btnLogin.addEventListener('click', function (e) {
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
 
-    startLogOutTimer();
+    if (timer) clearInterval(timer);
+    timer = startLogOutTimer();
 
     updateUI(currentAccount);
   }
@@ -317,6 +319,9 @@ btnLoan.addEventListener('click', function (e) {
     }, 2500);
   }
   inputLoanAmount.value = '';
+  //reset timer
+  clearInterval(timer);
+  timer = startLogOutTimer();
 });
 
 btnTransfer.addEventListener('click', function (e) {
@@ -341,6 +346,9 @@ btnTransfer.addEventListener('click', function (e) {
     receiverAcc.movementsDates.push(new Date().toISOString());
     //update UI
     updateUI(currentAccount);
+    //reset timer
+    clearInterval(timer);
+    timer = startLogOutTimer();
   }
 });
 
