@@ -22,6 +22,7 @@ const account1 = {
   ],
   currency: 'EUR',
   locale: 'uk', // de-DE
+  flag: '/ua.png',
 };
 
 const account2 = {
@@ -41,6 +42,7 @@ const account2 = {
   ],
   currency: 'EUR',
   locale: 'pt-PT',
+  flag: '/pt.png',
 };
 
 const account3 = {
@@ -49,17 +51,18 @@ const account3 = {
   interestRate: 0.7,
   pin: 3333,
   movementsDates: [
-    '2018-11-01T15:25:33.035Z',
-    '2019-15-30T09:48:16.867Z',
+    '2019-11-01T13:15:33.035Z',
+    '2019-11-30T09:48:16.867Z',
     '2019-12-25T06:04:23.907Z',
     '2020-01-25T14:18:46.235Z',
     '2020-02-05T16:33:06.386Z',
-    '2021-04-10T14:43:26.374Z',
-    '2022-06-25T18:49:59.371Z',
-    '2023-07-26T12:01:20.894Z',
+    '2020-04-10T14:43:26.374Z',
+    '2020-06-25T18:49:59.371Z',
+    '2020-07-26T12:01:20.894Z',
   ],
   currency: 'USD',
   locale: 'en-US',
+  flag: '/us.png',
 };
 
 const account4 = {
@@ -76,6 +79,7 @@ const account4 = {
   ],
   currency: 'EUR',
   locale: 'pt-PT', // de-DE
+  flag: '/pt.png',
 };
 
 const accounts = [account1, account2, account3, account4];
@@ -118,6 +122,13 @@ const formatMovementDate = function (date, locale) {
   return new Intl.DateTimeFormat(locale).format(date);
 };
 
+const formatCur = function (value, locale, currency) {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(value);
+};
+
 const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
 
@@ -135,7 +146,11 @@ const displayMovements = function (acc, sort = false) {
     <div class="movements__row">
     <div class="movements__type movements__type--${type}">${i + 1} ${type}</div>
     <div class="movements__date">${displayDate}</div>
-    <div class="movements__value">${mov.toFixed(2)}€</div>
+    <div class="movements__value">${formatCur(
+      mov,
+      acc.locale,
+      acc.currency
+    )}</div>
   </div>
   `;
     containerMovements.insertAdjacentHTML('afterbegin', html);
@@ -144,26 +159,34 @@ const displayMovements = function (acc, sort = false) {
 
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${acc.balance.toFixed(2)}€`;
+  labelBalance.textContent = `${formatCur(
+    acc.balance,
+    acc.locale,
+    acc.currency
+  )}`;
 };
 
 const calcDisplaySummary = function (acc) {
   const incomes = acc.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
+  labelSumIn.textContent = `${formatCur(incomes, acc.locale, acc.currency)}`;
 
   const outcomes = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc - mov, 0);
-  labelSumOut.textContent = `${outcomes.toFixed(2)}€`;
+  labelSumOut.textContent = `${formatCur(outcomes, acc.locale, acc.currency)}`;
 
   const interest = acc.movements
     .filter(mov => mov > 0)
     .map(deposit => (deposit * acc.interestRate) / 100)
     .filter(int => int >= 1)
     .reduce((acc, int) => acc + int, 0);
-  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
+  labelSumInterest.textContent = `${formatCur(
+    interest,
+    acc.locale,
+    acc.currency
+  )}`;
 };
 const createUsernames = function (accs) {
   accs.forEach(function (acc) {
@@ -185,6 +208,36 @@ const updateUI = function (acc) {
   calcDisplaySummary(acc);
 };
 
+const updateUIOnLogOut = function () {
+  containerApp.style.opacity = 0;
+  containerApp.style.display = 'none';
+  currentAccount = 0;
+  labelWelcome.textContent = 'Log in to get started';
+};
+
+//logout
+const startLogOutTimer = function () {
+  //set time to 5 minutes
+  let time = 5;
+
+  //call the timer every second
+  const timer = setInterval(function () {
+    const minutes = String(Math.trunc(time / 60)).padStart(2, 0);
+    const seconds = String(time % 60).padStart(2, 0);
+    //in each callback, print time to UI
+    labelTimer.textContent = `${minutes}:${seconds - 1}`;
+
+    //decrees 1 sec
+    time--;
+
+    //when time at 0 -> stop timer and logout user
+    if (time === 0) {
+      clearInterval(timer);
+      updateUIOnLogOut();
+    }
+  }, 1000);
+};
+
 //event handler
 let currentAccount;
 
@@ -201,11 +254,16 @@ btnLogin.addEventListener('click', function (e) {
   );
 
   if (currentAccount?.pin === +inputLoginPin.value) {
+    const flag = `
+    <img src="${currentAccount.flag}" alt="flag" class="flag" />
+`;
+
     //display UI and welcome message
     labelWelcome.textContent = `Welcome back, ${
       currentAccount.owner.split(' ')[0]
     }!`;
-
+    labelWelcome.insertAdjacentHTML('beforeend', flag);
+    //beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.
     //Create date and time
     /*
     const now = new Date();
@@ -238,10 +296,13 @@ btnLogin.addEventListener('click', function (e) {
     ).format(now);
 
     containerApp.style.opacity = 100;
+    containerApp.style.display = 'grid';
 
     //clear the input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
+
+    startLogOutTimer();
 
     updateUI(currentAccount);
   }
@@ -253,13 +314,15 @@ btnLoan.addEventListener('click', function (e) {
   const amount = Math.floor(inputLoanAmount.value);
 
   if (amount > 0 && currentAccount.movements.some(any => any >= amount * 0.1)) {
-    //add movement
-    currentAccount.movements.push(amount);
-    currentAccount.movementsDates.push(new Date().toISOString());
-    // Update UI
-    updateUI(currentAccount);
-    inputLoanAmount.value = '';
+    setTimeout(function () {
+      //add movement
+      currentAccount.movements.push(amount);
+      currentAccount.movementsDates.push(new Date().toISOString());
+      // Update UI
+      updateUI(currentAccount);
+    }, 2500);
   }
+  inputLoanAmount.value = '';
 });
 
 btnTransfer.addEventListener('click', function (e) {
@@ -302,8 +365,7 @@ btnClose.addEventListener('click', function (e) {
     accounts.splice(index, 1);
 
     //hide UI
-    containerApp.style.opacity = 0;
-    labelWelcome.textContent = `Log in to get started`;
+    updateUIOnLogOut();
   }
 });
 
@@ -1178,6 +1240,7 @@ console.log(days1);
 
 //#region ------ Lecture 176 Internalization -----
 //experimenting with API
+/*
 const now2 = new Date();
 const options2 = {
   year: 'numeric',
@@ -1200,6 +1263,7 @@ const optionsNum = {
   style: 'currency',
   unit: 'celsius',
   currency: 'uah',
+  // useGrouping: false,
 };
 
 console.log('US: ', new Intl.NumberFormat('en-US', optionsNum).format(num));
@@ -1208,4 +1272,36 @@ console.log(
   new Intl.NumberFormat('de-DE', optionsNum).format(num)
 );
 console.log('Syria: ', new Intl.NumberFormat('ar-SY', optionsNum).format(num));
+*/
+//#endregion
+
+//#region ------ Lecture 177 Timers -----
+/*
+//setTimeout()
+const ingredients = ['olives', 'spinach'];
+const pizzaTimer = setTimeout(
+  (ing1, ing2) =>
+    console.log(`Here is your pizza 🍕 with: ${ing1} and ${ing2}`),
+  2000,
+  ...ingredients
+);
+console.log('Waiting...');
+if (ingredients.includes('spinach')) clearTimeout(pizzaTimer);
+
+//setTimeout
+
+setInterval(function () {
+  const now = new Date();
+  console.log(
+    `${now.getHours(2).toString().padStart(2, '0')}:${now
+      .getMinutes()
+      .toString()
+      .padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
+  );
+}, 1000);
+*/
+//#endregion
+
+//#region ------ Lecture 178 Logout -----
+
 //#endregion
