@@ -15,13 +15,13 @@ const account1 = {
     '2019-12-23T07:42:02.383Z',
     '2020-01-28T09:15:04.904Z',
     '2020-04-01T10:17:24.185Z',
-    '2020-05-08T14:11:59.604Z',
-    '2020-05-27T17:01:17.194Z',
-    '2020-07-11T23:36:17.929Z',
-    '2020-07-12T10:51:36.790Z',
+    '2023-04-15T14:11:59.604Z',
+    '2023-04-19T17:01:17.194Z',
+    '2023-04-20T23:36:17.929Z',
+    '2023-04-21T10:51:36.790Z',
   ],
   currency: 'EUR',
-  locale: 'pt-PT', // de-DE
+  locale: 'uk', // de-DE
 };
 
 const account2 = {
@@ -39,8 +39,8 @@ const account2 = {
     '2020-06-25T18:49:59.371Z',
     '2020-07-26T12:01:20.894Z',
   ],
-  currency: 'USD',
-  locale: 'en-US',
+  currency: 'EUR',
+  locale: 'pt-PT',
 };
 
 const account3 = {
@@ -106,6 +106,18 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+const formatMovementDate = function (date, locale) {
+  const calcDaysPassed = (date1, date2) =>
+    Math.floor(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24));
+  const daysPassed = calcDaysPassed(new Date(), date);
+
+  if (daysPassed === 0) return 'Today';
+  if (daysPassed === 1) return 'Yesterday';
+  if (daysPassed <= 7) return `${daysPassed} days ago`;
+
+  return new Intl.DateTimeFormat(locale).format(date);
+};
+
 const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
 
@@ -117,10 +129,7 @@ const displayMovements = function (acc, sort = false) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
     const date = new Date(acc.movementsDates[i]);
-    const day = `${date.getDate()}`.padStart(2, 0);
-    const month = `${date.getMonth() + 1}`.padStart(2, 0);
-    const year = date.getFullYear();
-    const displayDate = `${day}/${month}/${year}`;
+    const displayDate = formatMovementDate(date, acc.locale);
 
     const html = `
     <div class="movements__row">
@@ -197,6 +206,8 @@ btnLogin.addEventListener('click', function (e) {
       currentAccount.owner.split(' ')[0]
     }!`;
 
+    //Create date and time
+    /*
     const now = new Date();
     const day = `${now.getDate()}`.padStart(2, 0);
     const month = `${now.getMonth() + 1}`.padStart(2, 0);
@@ -205,6 +216,26 @@ btnLogin.addEventListener('click', function (e) {
     const minutes = `${now.getMinutes()}`.padStart(2, 0);
     labelDate.textContent = `${day}/${month}/${year}, ${hour}:${minutes}`;
     // day/month/year
+    */
+
+    //experimenting with API
+    const now = new Date();
+    const options = {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: 'numeric',
+      // weekday: 'long',
+    };
+
+    // const locale = navigator.language;
+    // console.log(locale);
+
+    labelDate.textContent = new Intl.DateTimeFormat(
+      currentAccount.locale,
+      options
+    ).format(now);
 
     containerApp.style.opacity = 100;
 
@@ -1133,7 +1164,7 @@ console.log(future);
 //#endregion
 
 //#region ------ Lecture 175 Operation with dates -----
-
+/*
 const future = new Date(2037, 10, 19, 15, 23, 10, 678);
 console.log(+future);
 
@@ -1141,5 +1172,40 @@ const calcDaysPassed = (date1, date2) =>
   Math.abs(date2 - date1) / (1000 * 60 * 60 * 24);
 const days1 = calcDaysPassed(new Date(2037, 4, 19), new Date(2037, 10, 19));
 console.log(days1);
+*/
 
+//#endregion
+
+//#region ------ Lecture 176 Internalization -----
+//experimenting with API
+const now2 = new Date();
+const options2 = {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: 'numeric',
+  minute: 'numeric',
+  weekday: 'long',
+};
+
+const locale = navigator.language;
+console.log(locale);
+
+const date1 = new Intl.DateTimeFormat('uk', options2).format(now2);
+console.log(date1);
+
+const num = 3388330.23;
+
+const optionsNum = {
+  style: 'currency',
+  unit: 'celsius',
+  currency: 'uah',
+};
+
+console.log('US: ', new Intl.NumberFormat('en-US', optionsNum).format(num));
+console.log(
+  'Gernamy: ',
+  new Intl.NumberFormat('de-DE', optionsNum).format(num)
+);
+console.log('Syria: ', new Intl.NumberFormat('ar-SY', optionsNum).format(num));
 //#endregion
