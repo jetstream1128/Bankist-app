@@ -223,9 +223,9 @@ const startLogOutTimer = function () {
   //call the timer every second
   const timer = setInterval(function () {
     const minutes = String(Math.trunc(time / 60)).padStart(2, 0);
-    const seconds = String(time % 60).padStart(2, 0);
+    const seconds = String((time % 60) - 1).padStart(2, 0);
     //in each callback, print time to UI
-    labelTimer.textContent = `${minutes}:${seconds - 1}`;
+    labelTimer.textContent = `${minutes}:${seconds}`;
 
     //decrees 1 sec
     time--;
@@ -240,11 +240,6 @@ const startLogOutTimer = function () {
 
 //event handler
 let currentAccount;
-
-//Fake always loggen in
-currentAccount = account1;
-updateUI(currentAccount);
-containerApp.style.opacity = 100;
 
 btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
